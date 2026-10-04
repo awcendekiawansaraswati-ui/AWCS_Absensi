@@ -1,0 +1,432 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#123b68">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<title>AWCS — Absensi Guru Online</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--p:#6048e8;--bg:#f5f7fb;--card:#fff;--text:#14213d;--muted:#667085;--line:#e4e7ec;--ok:#138a55;--danger:#c62828}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;background:var(--bg);color:var(--text)}
+button,input,select,textarea{font:inherit}button{cursor:pointer}
+.login{min-height:100vh;display:grid;place-items:center;padding:24px;background:linear-gradient(135deg,#f2efff,#f8fbff)}
+.loginbox{width:min(440px,100%);background:#fff;border:1px solid var(--line);border-radius:24px;padding:32px;box-shadow:0 18px 55px #16213d18}
+.brand{display:flex;gap:14px;align-items:center;margin-bottom:26px}.logo{width:56px;height:56px;border-radius:16px;background:#eeeaff;display:grid;place-items:center;font-size:27px}.brand h1{font-size:21px;margin:0}.brand p{margin:4px 0 0;color:var(--muted)}
+label{display:block;font-weight:700;font-size:14px;margin:14px 0 7px}input,select,textarea{width:100%;border:1px solid #d8dce5;border-radius:11px;padding:12px;background:#fff;outline:none}input:focus,select:focus,textarea:focus{border-color:var(--p);box-shadow:0 0 0 3px #6048e818}
+.btn{border:0;border-radius:11px;padding:11px 16px;font-weight:800}.primary{background:var(--p);color:#fff}.light{background:#eef0f5;color:var(--text)}.danger{background:#ffe8e8;color:#a51d1d}.full{width:100%;margin-top:18px}.hint{font-size:13px;color:var(--muted);line-height:1.5}.err{color:var(--danger);background:#fff0f0;padding:10px;border-radius:10px;margin-top:12px;display:none}
+.app{min-height:100vh}.top{height:74px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 24px}.topbrand{font-size:20px;font-weight:900}.user{display:flex;align-items:center;gap:14px}.layout{display:grid;grid-template-columns:250px 1fr;min-height:calc(100vh - 74px)}aside{background:#fff;border-right:1px solid var(--line);padding:22px 14px}aside button{width:100%;text-align:left;border:0;background:transparent;padding:13px 15px;border-radius:12px;font-weight:800;color:#596579;margin-bottom:5px}aside button.active{background:#eeeaff;color:var(--p)}main{padding:30px;overflow:auto}.head{display:flex;justify-content:space-between;gap:20px;align-items:flex-start;margin-bottom:20px}.head h2{margin:0;font-size:28px}.muted{color:var(--muted)}.actions{display:flex;gap:9px;flex-wrap:wrap}.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px;margin-bottom:18px}.tablewrap{overflow:auto;border:1px solid var(--line);border-radius:14px}.table{width:100%;border-collapse:collapse;min-width:900px}.table th,.table td{border-bottom:1px solid var(--line);padding:12px 10px;text-align:left;white-space:nowrap}.table th{background:#fafbfc;color:#526079;font-size:13px}.status{display:flex;gap:5px}.status button{width:38px;height:36px;border:0;border-radius:10px;font-weight:900;background:#edf0f5;color:#344054}.status button.sel{background:#dff6e9;color:#137a4d}.time{border:0;background:#eef0f5;border-radius:10px;padding:9px 12px;font-weight:800}.saved{color:var(--ok);font-weight:800}.toast{position:fixed;right:20px;bottom:20px;background:#14213d;color:#fff;padding:13px 17px;border-radius:12px;display:none;z-index:50}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.stat{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px}.stat b{font-size:27px}.modal{position:fixed;inset:0;background:#14213d88;display:none;place-items:center;padding:20px;z-index:30}.modal.open{display:grid}.modalbox{background:#fff;border-radius:18px;padding:24px;width:min(520px,100%)}.recap{min-width:1400px}.recap td.day{padding:4px;text-align:center}.daybox{min-width:56px;height:62px;display:flex;flex-direction:column;justify-content:center;gap:3px;border:1px solid #e4e7ec;border-radius:7px;font-size:11px}.daybox .in{font-weight:800}.daybox .out{border-top:1px dashed #ccd1db;padding-top:2px}.daybox.honly{height:42px;min-width:42px;font-size:15px;font-weight:900;color:#98a2b3;display:grid;place-items:center}.daybox.honly.has-data{color:#138a55}.signature-area{display:flex;justify-content:flex-end;margin-top:22px}.sigbox{width:300px;text-align:center;min-height:135px;page-break-inside:avoid;break-inside:avoid}.sig-images{height:82px;position:relative;display:flex;align-items:center;justify-content:center;margin:4px 0}.signature{display:block;width:145px;height:70px;max-height:70px;object-fit:contain;position:relative;z-index:2}.stamp{display:block;width:78px;height:78px;object-fit:contain;opacity:.9;position:absolute;left:calc(50% - 78px);top:0;z-index:3}.sigbox b{display:block;margin-top:4px}.print-head{display:none}
+@media(max-width:850px){.layout{grid-template-columns:1fr}aside{display:flex;overflow:auto;gap:5px;padding:8px}aside button{min-width:max-content}.grid{grid-template-columns:1fr 1fr}.top{padding:0 12px}.topbrand{font-size:16px}main{padding:16px}.head{display:block}.actions{margin-top:12px}}
+@page{size:A3 landscape;margin:8mm}
+@page{size:A3 landscape;margin:8mm}@media print{html,body{width:100%;height:auto;margin:0!important;padding:0!important}.app{min-height:0!important}.layout{display:block!important}.layout main{padding:0!important;margin:0!important;overflow:visible!important}aside,.top,.actions,.no-print{display:none!important}.card{border:0!important;padding:0!important;margin:0!important}.print-head{display:block!important;text-align:center;margin:0 0 8px!important}.print-head h2{font-size:18px!important;margin:0 0 5px!important}.print-head h3{font-size:14px!important;margin:0!important}.tablewrap{overflow:visible!important;border:0!important;width:100%!important;margin-top:6px!important}.recap{width:100%!important;min-width:0!important;table-layout:fixed!important;font-size:7px!important;border-collapse:collapse!important}.recap th,.recap td{padding:2px 1px!important;white-space:nowrap!important;text-align:center!important}.recap th:nth-child(1),.recap td:nth-child(1){width:22px!important}.recap th:nth-child(2),.recap td:nth-child(2){width:155px!important;text-align:left!important}.daybox{height:30px!important;min-width:0!important;width:100%!important;border:0!important;border-radius:0!important;font-size:10px!important}.recap tr{break-inside:avoid!important;page-break-inside:avoid!important}.signature-area{display:flex!important;justify-content:flex-end!important;width:100%!important;margin-top:10mm!important;page-break-inside:avoid!important;break-inside:avoid!important}.sigbox{width:300px!important;min-height:135px!important;text-align:center!important;page-break-inside:avoid!important;break-inside:avoid!important}.sig-images{height:82px!important;position:relative!important;display:flex!important;align-items:center!important;justify-content:center!important;margin:4px 0!important}.signature{width:145px!important;height:70px!important;max-height:70px!important;object-fit:contain!important}.stamp{position:absolute!important;left:calc(50% - 78px)!important;top:0!important;width:78px!important;height:78px!important;object-fit:contain!important;opacity:.9!important;z-index:3!important}.sigbox b{display:block!important;margin-top:4px!important}}
+
+/* AWCS ULTRA PREMIUM — visual layer only, functionality unchanged */
+:root{
+  --p:#173d7a;
+  --p2:#2f69c9;
+  --p3:#7b56d8;
+  --gold:#d7a83f;
+  --gold-soft:#fff7df;
+  --bg:#eef3f9;
+  --card:#ffffff;
+  --text:#15233d;
+  --muted:#6f7d93;
+  --line:#e3e9f2;
+  --ok:#14966a;
+  --danger:#c73535;
+  --shadow:0 18px 50px rgba(21,35,61,.08);
+}
+html{scroll-behavior:smooth}
+body{
+  min-height:100vh;
+  background:
+    radial-gradient(circle at 7% 5%,rgba(71,112,194,.10),transparent 24%),
+    radial-gradient(circle at 92% 12%,rgba(123,86,216,.10),transparent 20%),
+    linear-gradient(180deg,#f7f9fc 0%,#eef3f9 100%);
+}
+body:before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;opacity:.26;
+  background-image:linear-gradient(rgba(23,61,122,.028) 1px,transparent 1px),linear-gradient(90deg,rgba(23,61,122,.028) 1px,transparent 1px);
+  background-size:28px 28px;
+  mask-image:linear-gradient(to bottom,rgba(0,0,0,.7),transparent 78%);
+}
+button,input,select,textarea{font-size:14px}
+.login{padding:26px;background:
+  radial-gradient(circle at 8% 8%,rgba(46,105,201,.18),transparent 26%),
+  radial-gradient(circle at 92% 90%,rgba(123,86,216,.16),transparent 28%),
+  linear-gradient(135deg,#eef4ff,#f8fbff 50%,#f7f5ff);}
+.login:before{width:460px;height:460px;background:rgba(215,168,63,.10);top:-210px;right:-140px;filter:blur(10px)}
+.login:after{width:380px;height:380px;background:rgba(47,105,201,.09);bottom:-170px;left:-120px;filter:blur(10px)}
+.loginbox{
+  width:min(510px,100%);padding:40px;border:1px solid rgba(255,255,255,.75);border-radius:30px;
+  background:linear-gradient(180deg,rgba(255,255,255,.96),rgba(250,252,255,.94));
+  box-shadow:0 35px 100px rgba(24,46,89,.16),0 2px 0 rgba(255,255,255,.85) inset;
+  backdrop-filter:blur(18px);overflow:hidden;
+}
+.loginbox:before{
+  content:"";display:block;height:4px;border-radius:99px;margin:-40px -40px 28px;
+  background:linear-gradient(90deg,var(--p),var(--p2),var(--p3),var(--gold));
+}
+.brand{align-items:flex-start;gap:18px;margin-bottom:30px}
+.logo{width:74px;height:74px;flex:0 0 74px;border-radius:22px;background:linear-gradient(145deg,#fff,#eef3ff);border:1px solid #e6ebf4;box-shadow:0 12px 28px rgba(23,61,122,.16);position:relative}
+.logo:after{content:"";position:absolute;inset:6px;border-radius:17px;border:1px solid rgba(215,168,63,.22);pointer-events:none}
+.brand h1{font-size:22px;line-height:1.18;letter-spacing:-.45px;color:#18345f}
+.brand p{display:inline-flex;align-items:center;gap:7px;margin:8px 0 0;padding:7px 10px;border:1px solid #e5ebf4;background:#f8fafc;border-radius:999px;font-size:11px;letter-spacing:.45px;text-transform:uppercase;color:#61728b}
+.brand p:before{content:"";width:7px;height:7px;border-radius:50%;background:#23a875;box-shadow:0 0 0 4px #23a87516}
+.loginbox label{margin-top:17px;font-size:12px;letter-spacing:.55px;text-transform:uppercase;color:#506079}
+.loginbox input{height:48px;padding:0 14px;border-radius:14px;background:#fbfcfe;border-color:#dfe6f0;box-shadow:0 1px 0 #fff inset;}
+.loginbox input:hover{border-color:#cfd8e6}
+.loginbox input:focus{border-color:#5c7ec1;box-shadow:0 0 0 4px rgba(47,105,201,.10),0 1px 0 #fff inset}
+.loginbox .primary{height:50px;margin-top:20px;border-radius:15px;background:linear-gradient(135deg,#173d7a,#2f69c9 58%,#6a52c9);box-shadow:0 14px 24px rgba(47,105,201,.23)}
+.loginbox .primary:hover{box-shadow:0 17px 30px rgba(47,105,201,.28)}
+.loginbox .hint{margin:18px 0 0;padding:13px 14px;border:1px solid #e6ebf3;border-radius:13px;background:#f8fafc;color:#718096;font-size:12px}
+
+.app{background:transparent}
+.top{
+  height:78px;padding:0 28px;background:rgba(255,255,255,.88);border-bottom:1px solid rgba(219,226,237,.95);
+  box-shadow:0 10px 30px rgba(20,33,61,.05);backdrop-filter:blur(18px);position:sticky;top:0;z-index:20;
+}
+.topbrand{display:flex;align-items:center;gap:11px;color:#18345f;font-size:19px}
+.topbrand:before{content:"";width:38px;height:38px;border-radius:12px;background:url('icons/icon-192.png') center/cover no-repeat;box-shadow:0 7px 18px rgba(23,61,122,.14);border:1px solid #e2e8f2;flex:0 0 38px}
+.user{gap:10px}
+.user span{padding:9px 12px;border:1px solid #e4e9f1;border-radius:999px;background:#f8fafc;color:#4b5c75;max-width:340px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.user button{border:1px solid #dfe5ee;background:#fff}
+.layout{grid-template-columns:268px 1fr;min-height:calc(100vh - 78px)}
+aside{
+  background:rgba(248,250,253,.90);border-right:1px solid #dfe6ef;padding:20px 14px;box-shadow:8px 0 30px rgba(21,35,61,.035);position:relative
+}
+aside:before{
+  content:"AWCS • DIGITAL ATTENDANCE";display:block;padding:8px 12px 16px;color:#91a0b6;font-size:9px;font-weight:900;letter-spacing:1.2px;text-transform:uppercase;
+}
+aside:after{
+  content:"";position:absolute;left:14px;right:14px;bottom:16px;height:1px;background:linear-gradient(90deg,transparent,#e0e6ef,transparent)
+}
+aside button{
+  display:flex;align-items:center;gap:9px;width:100%;margin-bottom:6px;padding:12px 14px;border:1px solid transparent;border-radius:13px;color:#66758d;transition:all .18s ease;
+}
+aside button:hover{transform:translateX(2px);background:#fff;border-color:#e6ebf3;color:#2f5ea8;box-shadow:0 7px 18px rgba(21,35,61,.05)}
+aside button.active{background:linear-gradient(135deg,#eaf1ff,#f1eeff);border-color:#dce6fa;color:#214d93;box-shadow:0 8px 20px rgba(47,105,201,.08)}
+aside button.active:before{left:0;top:9px;bottom:9px;width:4px;background:linear-gradient(#2f69c9,#7b56d8)}
+main{padding:32px;max-width:1720px}
+.head h2{font-size:28px;color:#1a3155;margin-bottom:4px}
+.head .muted{font-size:13px}
+.head{position:relative}
+.head:after{content:"";display:block;width:72px;height:3px;border-radius:99px;background:linear-gradient(90deg,var(--gold),#ead796);margin-top:12px}
+.actions{gap:8px}
+.btn{min-height:40px;border-radius:12px;border:1px solid transparent;font-weight:800;letter-spacing:.05px}
+.primary{background:linear-gradient(135deg,#173d7a,#2f69c9);box-shadow:0 9px 19px rgba(47,105,201,.18)}
+.light{background:#fff;border-color:#dfe6ef;color:#44546d}
+.light:hover{background:#f8fafc;border-color:#ccd6e4}
+.danger{background:#fff4f4;border:1px solid #f4d3d3;color:#b42318}
+.card{padding:22px;border-radius:22px;border:1px solid rgba(224,230,239,.92);box-shadow:var(--shadow);background:rgba(255,255,255,.94)}
+.card h3{margin-top:0;color:#21395f}
+.grid{gap:18px}
+.stat{padding:22px;border-radius:20px;border:1px solid #e1e7f0;box-shadow:var(--shadow);background:linear-gradient(180deg,#fff,#fbfcfe);transition:transform .18s ease,box-shadow .18s ease}
+.stat:hover{transform:translateY(-3px);box-shadow:0 22px 44px rgba(21,35,61,.10)}
+.stat:nth-child(1){border-top:3px solid #2f69c9}.stat:nth-child(2){border-top:3px solid #159b73}.stat:nth-child(3){border-top:3px solid #d7a83f}.stat:nth-child(4){border-top:3px solid #7b56d8}
+.stat>div:first-child{font-size:12px;font-weight:800;letter-spacing:.45px;text-transform:uppercase;color:#76859a}
+.stat b{font-size:31px;color:#1b3359}
+.stat:after{width:115px;height:115px;right:-42px;top:-42px;background:radial-gradient(circle,#edf3ff,transparent 68%)}
+.tablewrap{border-radius:17px;border:1px solid #e1e7ef;box-shadow:0 8px 25px rgba(21,35,61,.045);background:#fff}
+.table{font-size:13px}
+.table th{position:sticky;top:0;z-index:2;background:linear-gradient(180deg,#f9fbfd,#f2f5fa);color:#52627a;letter-spacing:.55px;font-size:11px}
+.table td,.table th{border-bottom:1px solid #edf1f6;padding:13px 11px}
+.table tbody tr{transition:background .15s ease}
+.table tbody tr:hover{background:#f9fbff}
+.status button{width:38px;height:36px;border:1px solid #e0e6ef;background:#f8fafc;color:#53637c;transition:.15s}
+.status button:hover:not(:disabled){transform:translateY(-1px);border-color:#c6d3e8;background:#fff}
+.status button.sel{background:linear-gradient(135deg,#e7f7f0,#dff3eb);border-color:#b9e3d1;color:#10805a;box-shadow:0 5px 12px rgba(20,150,106,.10)}
+.time{border:1px solid #e2e8f0;background:#f8fafc;border-radius:10px;padding:8px 11px;color:#2f5d99}
+.saved{color:#11845e;font-size:12px}
+input,select,textarea{border-radius:13px;border-color:#dce4ef;background:#fbfcfe}
+.modal{background:rgba(10,21,39,.58);backdrop-filter:blur(7px)}
+.modalbox{border-radius:24px;padding:28px;background:linear-gradient(180deg,#fff,#fbfcff);border:1px solid #e4eaf3}
+.toast{right:24px;bottom:24px;border:1px solid rgba(255,255,255,.14);box-shadow:0 18px 42px rgba(13,25,45,.25);padding:14px 18px}
+.daybox.honly{border-color:#e0e6ee;background:#fbfcfe;border-radius:9px}
+.daybox.honly.has-data{background:linear-gradient(180deg,#ecfbf4,#e1f6ed);color:#10805a;border-color:#bfe7d5;box-shadow:inset 0 1px 0 rgba(255,255,255,.8)}
+.signature-area{margin-top:26px}
+.sigbox{padding:14px 16px 0;border-radius:18px;border:1px solid #e7ebf1;background:#fff;box-shadow:0 10px 24px rgba(21,35,61,.05)}
+@media(max-width:850px){
+  .top{padding:0 12px}.topbrand:before{width:32px;height:32px;flex-basis:32px}.user span{max-width:180px}
+  .layout{display:block}.layout main{padding:16px 16px 92px}
+  aside{position:fixed;left:0;right:0;bottom:0;z-index:40;height:66px;padding:7px 8px;display:flex;gap:5px;align-items:center;justify-content:space-between;border-top:1px solid #dde5ef;border-right:0;box-shadow:0 -10px 28px rgba(21,35,61,.10);background:rgba(255,255,255,.95);backdrop-filter:blur(16px)}
+  aside:before,aside:after{display:none}
+  aside button{min-width:0;flex:1;justify-content:center;margin:0;padding:10px 7px;font-size:11px;border-radius:12px;white-space:nowrap;overflow:hidden}
+  aside button:hover{transform:none;box-shadow:none}
+  .head h2{font-size:22px}.card{padding:18px}.stat{padding:17px}
+}
+@media(max-width:520px){
+  .loginbox{padding:28px;border-radius:24px}.loginbox:before{margin:-28px -28px 24px}.brand{gap:13px}.brand h1{font-size:17px}.logo{width:58px;height:58px;flex-basis:58px;border-radius:18px}
+  .topbrand{font-size:12px}.user span{display:none}.user button{padding:9px 12px}
+  main{padding:14px}.grid{grid-template-columns:1fr 1fr}.stat b{font-size:25px}
+  aside button{font-size:10px}
+}
+@media print{
+  body:before{display:none}.signature-area{background:#fff!important}.sigbox{box-shadow:none!important;border:0!important}
+}
+
+</style>
+</head>
+<body>
+<div id="login" class="login">
+  <div class="loginbox">
+    <div class="brand"><div class="logo">A</div><div><h1>Adi Widyalaya Cendekiawan Saraswati</h1><p>Absensi Guru Online</p></div></div>
+    <label>Email</label><input id="email" type="email" placeholder="Email guru / admin" autocomplete="username">
+    <label>Password</label><input id="password" type="password" placeholder="Password" autocomplete="current-password">
+    <button class="btn primary full" onclick="login()">Masuk</button>
+    <div id="loginErr" class="err"></div>
+    <p class="hint">Aplikasi ini menggunakan satu database online. Data absensi yang disimpan akan terlihat dari perangkat lain yang login ke akun masing-masing.</p>
+  </div>
+</div>
+
+<div id="app" class="app" style="display:none">
+  <header class="top"><div class="topbrand">Adi Widyalaya Cendekiawan Saraswati</div><div class="user"><span id="who"></span><button class="btn light" onclick="logout()">Keluar</button></div></header>
+  <div class="layout">
+    <aside>
+      <button id="navDashboard" onclick="page('dashboard')">🏠 Dashboard</button>
+      <button id="navAbsensi" onclick="page('absensi')">🕘 Absensi</button>
+      <button id="navRekap" onclick="page('rekap')">📊 Rekap</button>
+      <button id="navGuru" onclick="page('guru')">👨‍🏫 Guru</button>
+      <button id="navPengaturan" onclick="page('pengaturan')">⚙️ Pengaturan</button>
+      <button id="navKoreksi" onclick="page('koreksi')">🛠️ Koreksi Absen</button>
+    </aside>
+    <main id="main"></main>
+  </div>
+</div>
+<div id="toast" class="toast"></div>
+
+<div id="teacherModal" class="modal"><div class="modalbox">
+<h3>Tambah Guru</h3>
+<p class="hint">Data guru akan disimpan di database online. Pembuatan akun login baru memerlukan akun Authentication yang dibuat oleh Admin/server.</p>
+<label>Nama lengkap</label><input id="newName">
+<label>Email akun</label><input id="newEmail" type="email">
+<div style="display:flex;justify-content:flex-end;gap:8px;margin-top:18px"><button class="btn light" onclick="closeTeacher()">Batal</button><button class="btn primary" onclick="addTeacher()">Simpan Data Guru</button></div>
+</div></div>
+
+<script>
+const SUPABASE_URL='https://xcppxtpwdbjlciuegfoe.supabase.co';
+const SUPABASE_KEY='sb_publishable_4SK7mOIZcl1bQ7RYx8qL7A_2KybYdkK';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+let session=null, profile=null, teachers=[], attendance=[], current='dashboard', selectedDate=today();
+let printSignature=localStorage.getItem('awcs_signature')||'assets/signature_transparent.png';
+let printStamp=localStorage.getItem('awcs_stamp')||'assets/stamp_transparent.png';
+let principalName=localStorage.getItem('awcs_principal_name')||'Niluh Rosdiyanti, S.Pd.';
+
+// Waktu resmi absensi AWCS: Kendari/WITA (UTC+08:00)
+function kendariNow(){
+  const parts=new Intl.DateTimeFormat('en-CA',{
+    timeZone:'Asia/Makassar', year:'numeric', month:'2-digit', day:'2-digit',
+    hour:'2-digit', minute:'2-digit', second:'2-digit', hourCycle:'h23'
+  }).formatToParts(new Date());
+  const o={}; parts.forEach(p=>o[p.type]=p.value);
+  return {date:`${o.year}-${o.month}-${o.day}`, time:`${o.hour}:${o.minute}:${o.second}`};
+}
+function kendariTime(){ return kendariNow().time; }
+
+function today(){ return kendariNow().date; }
+function esc(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));}
+function toast(s){const x=document.getElementById('toast');x.textContent=s;x.style.display='block';clearTimeout(window.__t);window.__t=setTimeout(()=>x.style.display='none',2600);}
+function isAdmin(){return profile?.role==='admin';}
+function myTeacher(){return teachers.find(t=>t.user_id===profile?.id);}
+function attFor(date,teacherId){return attendance.find(a=>a.attendance_date===date&&a.teacher_id===teacherId)||{};}
+function fmtTime(t){return t?t.slice(0,5):'';}
+async function login(){
+  const e=email.value.trim(),p=password.value,err=document.getElementById('loginErr');err.style.display='none';
+  if(!e||!p){err.textContent='Email dan password wajib diisi.';err.style.display='block';return}
+  const r=await sb.auth.signInWithPassword({email:e,password:p});
+  if(r.error){err.textContent='Email atau password salah.';err.style.display='block';return}
+  await start();
+}
+async function start(){
+  const s=await sb.auth.getSession();session=s.data.session;if(!session)return;
+  const pr=await sb.from('profiles').select('*').eq('id',session.user.id).maybeSingle();
+  if(pr.error||!pr.data||pr.data.active===false){await sb.auth.signOut();alert('Profil akun tidak aktif atau belum terdaftar.');return}
+  profile=pr.data;await loadData();document.getElementById('login').style.display='none';document.getElementById('app').style.display='block';document.getElementById('who').textContent=(profile.full_name||session.user.email)+' · '+(profile.role||'guru');page('dashboard');
+}
+async function loadData(){
+  const [t,a]=await Promise.all([
+    sb.from('teachers').select('*').eq('active',true).order('full_name'),
+    sb.from('attendance').select('*')
+  ]);
+  if(t.error)throw t.error;if(a.error)throw a.error;teachers=t.data||[];attendance=a.data||[];
+}
+async function logout(){await sb.auth.signOut();location.reload();}
+function page(p){current=p;document.querySelectorAll('aside button').forEach(x=>x.classList.remove('active'));document.getElementById('nav'+p[0].toUpperCase()+p.slice(1))?.classList.add('active');render();}
+function render(){if(current==='dashboard')dashboard();else if(current==='absensi')absensi();else if(current==='rekap')rekap();else if(current==='guru')guru();else if(current==='pengaturan')pengaturan();else koreksi();}
+function dashboard(){
+  const me=myTeacher(),a=me?attFor(today(),me.id):{};
+  document.getElementById('main').innerHTML=`<div class="head"><div><h2>Dashboard</h2><p class="muted">Data terhubung langsung ke database online AWCS.</p></div></div>
+  <div class="grid"><div class="stat"><div>Status Hari Ini</div><b>${a.status||'—'}</b></div><div class="stat"><div>Jam Masuk</div><b>${fmtTime(a.check_in)||'—'}</b></div><div class="stat"><div>Jam Pulang</div><b>${fmtTime(a.check_out)||'—'}</b></div><div class="stat"><div>Total Guru</div><b>${teachers.length}</b></div></div>
+  <div class="card"><h3>Aturan akses</h3><p class="muted">${isAdmin()?'Admin dapat melihat dan mengoreksi semua guru.':'Guru dapat mengisi absensinya sendiri. Data tersimpan online dan dapat dilihat Admin.'}</p></div>`;
+}
+function absensi(){
+  const list=isAdmin()?teachers:(myTeacher()?[myTeacher()]:[]);
+  document.getElementById('main').innerHTML=`<div class="head"><div><h2>Absensi Guru</h2><p class="muted">Tanggal ${selectedDate}. Data tersimpan online.</p></div><div class="actions"><button class="btn primary" onclick="markPresent()">✓ Tandai Hadir</button>${isAdmin()?'<button class="btn danger" onclick="resetAbsen()">↻ Reset Absen</button>':''}</div></div>
+  <div class="card"><label>Tanggal</label><input style="max-width:230px" type="date" value="${selectedDate}" onchange="selectedDate=this.value;render()"><div class="tablewrap" style="margin-top:18px"><table class="table"><thead><tr><th>No</th><th>Nama Guru</th><th>Status</th><th>Masuk</th><th>Pulang</th><th>Keterangan</th><th>Penanda</th></tr></thead><tbody>${list.map((t,i)=>rowAttendance(t,i)).join('')}</tbody></table></div></div>`;
+}
+function rowAttendance(t,i){
+ const a=attFor(selectedDate,t.id),can=isAdmin()||t.user_id===profile.id;
+ return `<tr><td>${i+1}</td><td><b>${esc(t.full_name)}</b><br><span class="muted">${t.user_id?'Akun aktif':'Belum terhubung akun'}</span></td>
+ <td><div class="status">${[['Hadir','H'],['Izin','I'],['Sakit','S'],['Absen','A']].map(([v,l])=>`<button class="${a.status===v?'sel':''}" ${can?'':'disabled'} onclick="setStatus('${t.id}','${v}')">${l}</button>`).join('')}</div></td>
+ <td><button class="time" ${can?'':'disabled'} onclick="setTime('${t.id}','check_in')">＋ ${fmtTime(a.check_in)||'masuk'}</button></td>
+ <td><button class="time" ${can?'':'disabled'} onclick="setTime('${t.id}','check_out')">＋ ${fmtTime(a.check_out)||'pulang'}</button></td>
+ <td><input ${can?'':'disabled'} value="${esc(a.notes||'')}" placeholder="Keterangan" onchange="setNotes('${t.id}',this.value)"></td>
+ <td>${a.updated_at?'<span class="saved">✓ Tersimpan</span>':'Belum diisi'}</td></tr>`;
+}
+async function saveAtt(tid,patch){
+  const old=attFor(selectedDate,tid);
+  const payload={teacher_id:tid,attendance_date:selectedDate,status:patch.status??old.status??null,check_in:patch.check_in??old.check_in??null,check_out:patch.check_out??old.check_out??null,notes:patch.notes??old.notes??null,updated_by:profile.id};
+  const q=await sb.from('attendance').upsert(payload,{onConflict:'teacher_id,attendance_date'}).select().single();
+  if(q.error){toast(q.error.message);return false}
+  const ix=attendance.findIndex(x=>x.id===q.data.id);if(ix>=0)attendance[ix]=q.data;else attendance.push(q.data);render();toast('✓ Tersimpan online');return true;
+}
+async function setStatus(tid,status){await saveAtt(tid,{status});}
+async function setTime(tid,col){
+  const old=attFor(selectedDate,tid);
+  const now=kendariTime();
+  const patch={};
+  patch[col]=now;
+  if(!old.status) patch.status='Hadir';
+  await saveAtt(tid,patch);
+}
+async function setNotes(tid,v){await saveAtt(tid,{notes:v});}
+async function resetAbsen(){
+  if(!isAdmin()){alert('Hanya Admin yang dapat melakukan Reset Absen.');return}
+  const choice=prompt('Reset Absen:\n1 = semua guru pada tanggal ini\n2 = satu guru pada tanggal ini\n\nKetik 1 atau 2');
+  if(choice!=='1' && choice!=='2') return;
+  let teacherId=null;
+  if(choice==='2'){
+    const names=teachers.map((t,i)=>`${i+1}. ${t.full_name}`).join('\n');
+    const n=prompt(`Pilih nomor guru:\n${names}`);
+    const idx=Number(n)-1;
+    if(!Number.isInteger(idx)||idx<0||idx>=teachers.length){alert('Pilihan guru tidak valid.');return}
+    teacherId=teachers[idx].id;
+  }
+  const target=teacherId ? teachers.find(t=>t.id===teacherId)?.full_name : 'SEMUA GURU';
+  if(!confirm(`Yakin reset absensi ${target} untuk tanggal ${selectedDate}? Data absensi tanggal tersebut akan dihapus dan harus diisi kembali.`)) return;
+  let q=sb.from('attendance').delete().eq('attendance_date',selectedDate);
+  if(teacherId) q=q.eq('teacher_id',teacherId);
+  const r=await q;
+  if(r.error){toast('Reset gagal: '+r.error.message);return}
+  attendance=attendance.filter(a=>!(a.attendance_date===selectedDate && (!teacherId || a.teacher_id===teacherId)));
+  render();
+  toast('✓ Absensi berhasil di-reset');
+}
+async function markPresent(){
+  const list=isAdmin()?teachers:(myTeacher()?[myTeacher()]:[]);
+  for(const t of list){
+    const old=attFor(selectedDate,t.id);
+    await saveAtt(t.id,{
+      status:'Hadir',
+      check_in:old.check_in||kendariTime()
+    });
+  }
+}
+async function rekap(){
+ const input=document.getElementById('rekapMonth');
+ const value=input?.value || today().slice(0,7);
+ const [y,m]=value.split('-').map(Number);
+ const startDate=`${y}-${String(m).padStart(2,'0')}-01`;
+ const lastDay=new Date(Date.UTC(y,m,0)).getUTCDate();
+ const endDateStr=`${y}-${String(m).padStart(2,'0')}-${String(lastDay).padStart(2,'0')}`;
+ // Ambil guru dan absensi langsung dari Supabase setiap kali rekap dibuka.
+ const [tq,aq]=await Promise.all([
+   sb.from('teachers').select('*').eq('active',true).order('full_name'),
+   sb.from('attendance').select('*').gte('attendance_date',startDate).lte('attendance_date',endDateStr)
+ ]);
+ if(tq.error || aq.error){
+   const msg=(tq.error||aq.error).message;
+   document.getElementById('main').innerHTML=`<div class="card"><h2>Rekap Bulanan</h2><p style="color:#b42318">Gagal mengambil data rekap: ${esc(msg)}</p><button class="btn primary" onclick="rekap()">↻ Coba Lagi</button></div>`;
+   return;
+ }
+ const list=tq.data||[];
+ const rows=aq.data||[];
+ const byKey=new Map(rows.map(a=>[`${a.teacher_id}|${a.attendance_date}`,a]));
+ const code=a=>a?.status==='Hadir'?'H':a?.status==='Izin'?'I':a?.status==='Sakit'?'S':a?.status==='Absen'?'A':'';
+ let head='<tr><th rowspan="2">No</th><th rowspan="2">Nama Guru</th>';
+ for(let d=1;d<=lastDay;d++) head+=`<th class="day">${d}</th>`;
+ head+='</tr><tr>';
+ for(let d=1;d<=lastDay;d++) head+='<th class="day">H/I/S/A</th>';
+ head+='</tr>';
+ const body=list.map((t,i)=>{
+   let cells='';
+   for(let d=1;d<=lastDay;d++){
+     const dt=`${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+     const c=code(byKey.get(`${t.id}|${dt}`));
+     cells+=`<td class="day"><div class="daybox honly ${c?'has-data':''}">${c}</div></td>`;
+   }
+   return `<tr><td>${i+1}</td><td><b>${esc(t.full_name)}</b></td>${cells}</tr>`;
+ }).join('');
+ document.getElementById('main').innerHTML=`<div class="head"><div><h2>Rekap Bulanan</h2><p class="muted">Rekap otomatis dari absensi guru. H = Hadir, I = Izin, S = Sakit, A = Absen.</p></div><div class="actions"><button class="btn light" onclick="addSignature()">✍ Tambah Tanda Tangan</button><button class="btn light" onclick="addStamp()">🔵 Tambah Stempel Sekolah</button><button class="btn primary" onclick="window.print()">🖨 Cetak</button></div></div><div class="card"><label>Bulan</label><input id="rekapMonth" type="month" value="${value}" onchange="rekap()"><div class="print-head"><h2>ADI WIDYALAYA CENDEKIAWAN SARASWATI</h2><h3>REKAP ABSENSI GURU — ${String(m).padStart(2,'0')}/${y}</h3></div><div class="tablewrap" style="margin-top:18px"><table class="table recap"><thead>${head}</thead><tbody>${body||'<tr><td colspan="40" style="text-align:center">Belum ada data guru.</td></tr>'}</tbody></table></div>
+ <div class="signature-area"><div class="sigbox"><div>Mengetahui,</div><div>Kepala Sekolah</div><div class="sig-images">${printStamp?`<img class="stamp" src="${printStamp}">`:''}${printSignature?`<img class="signature" src="${printSignature}">`:''}</div><b>${esc(principalName)}</b></div></div>
+</div>`;
+}
+
+function chooseImage(title,storageKey){
+  return new Promise(resolve=>{
+    const inp=document.createElement('input');inp.type='file';inp.accept='image/*';
+    inp.onchange=()=>{
+      const f=inp.files?.[0];if(!f){resolve(null);return}
+      const rd=new FileReader();rd.onload=()=>{localStorage.setItem(storageKey,rd.result);resolve(rd.result)};rd.readAsDataURL(f);
+    };
+    inp.click();
+  });
+}
+async function addSignature(){
+  if(!isAdmin()){alert('Hanya Admin yang dapat menambahkan tanda tangan.');return}
+  const v=await chooseImage('Tanda Tangan','awcs_signature');if(v){printSignature=v;toast('✓ Tanda tangan ditambahkan untuk cetak.');rekap();}
+}
+async function addStamp(){
+  if(!isAdmin()){alert('Hanya Admin yang dapat menambahkan stempel sekolah.');return}
+  const v=await chooseImage('Stempel Sekolah','awcs_stamp');if(v){printStamp=v;toast('✓ Stempel sekolah ditambahkan untuk cetak.');rekap();}
+}
+function guru(){
+ if(!isAdmin()){document.getElementById('main').innerHTML='<div class="card"><h2>Akses Admin</h2><p class="muted">Menu Guru hanya untuk Admin.</p></div>';return}
+ document.getElementById('main').innerHTML=`<div class="head"><div><h2>Data Guru</h2><p class="muted">Admin dapat mengganti nama guru tanpa membuat akun baru.</p></div><button class="btn primary" onclick="openTeacher()">＋ Tambah Guru</button></div><div class="card"><div class="tablewrap"><table class="table"><thead><tr><th>No</th><th>Nama Guru</th><th>Email</th><th>Status akun</th><th>Aksi</th></tr></thead><tbody>${teachers.map((t,i)=>`<tr><td>${i+1}</td><td><b>${esc(t.full_name)}</b></td><td>${esc(t.email||'')}</td><td>${t.user_id?'✓ Terhubung':'Belum terhubung'}</td><td><button class="btn light" onclick="editTeacherName('${t.id}')">✏️ Ganti Nama</button></td></tr>`).join('')}</tbody></table></div></div>`;
+}
+async function editTeacherName(tid){
+ if(!isAdmin()){alert('Hanya Admin yang dapat mengganti nama guru.');return}
+ const t=teachers.find(x=>x.id===tid);if(!t)return;
+ const name=prompt('Masukkan nama guru yang baru:',t.full_name||'');
+ if(name===null)return;
+ const v=name.trim();if(!v){alert('Nama guru tidak boleh kosong.');return}
+ if(v===t.full_name)return;
+ const q=await sb.from('teachers').update({full_name:v}).eq('id',tid).select().single();
+ if(q.error){toast('Gagal mengganti nama: '+q.error.message);return}
+ const ix=teachers.findIndex(x=>x.id===tid);if(ix>=0)teachers[ix]=q.data;
+ render();toast('✓ Nama guru berhasil diganti.');
+}
+function pengaturan(){
+ if(!isAdmin()){document.getElementById('main').innerHTML='<div class="card"><h2>Akses Admin</h2><p class="muted">Pengaturan hanya untuk Admin.</p></div>';return}
+ document.getElementById('main').innerHTML=`<div class="head"><div><h2>Pengaturan</h2><p class="muted">Ubah nama yang digunakan pada data dan hasil cetak.</p></div></div>
+ <div class="card"><h3>Nama Kepala Sekolah</h3><p class="muted">Nama ini akan tampil pada bagian tanda tangan di Rekap Bulanan.</p><label>Nama Kepala Sekolah</label><input id="principalNameInput" value="${esc(principalName)}"><div class="actions" style="margin-top:14px"><button class="btn primary" onclick="savePrincipalName()">💾 Simpan Nama Kepala Sekolah</button></div></div>
+ <div class="card"><h3>Nama Guru</h3><p class="muted">Untuk mengganti nama guru, buka menu <b>Guru</b> lalu tekan <b>Ganti Nama</b> pada guru yang diinginkan.</p><button class="btn light" onclick="page('guru')">👨‍🏫 Kelola Nama Guru</button></div>`;
+}
+function savePrincipalName(){
+ if(!isAdmin())return;
+ const v=document.getElementById('principalNameInput')?.value.trim();
+ if(!v){alert('Nama Kepala Sekolah tidak boleh kosong.');return}
+ principalName=v;localStorage.setItem('awcs_principal_name',v);toast('✓ Nama Kepala Sekolah disimpan.');
+}
+function koreksi(){
+ if(!isAdmin()){document.getElementById('main').innerHTML='<div class="card"><h2>Akses Admin</h2><p class="muted">Koreksi hanya dapat dilakukan Admin.</p></div>';return}
+ document.getElementById('main').innerHTML=`<div class="head"><div><h2>Koreksi Absen</h2><p class="muted">Admin dapat memilih tanggal dan guru lalu mengubah status/jam.</p></div><div class="actions"><button class="btn danger" onclick="resetAbsen()">↻ Reset Absen</button></div></div><div class="card"><label>Tanggal</label><input type="date" id="kdate" value="${selectedDate}" onchange="renderKoreksi()"><div id="kbody"></div></div>`;renderKoreksi();
+}
+function renderKoreksi(){const d=document.getElementById('kdate')?.value||selectedDate;const el=document.getElementById('kbody');if(!el)return;el.innerHTML=`<div class="tablewrap" style="margin-top:16px"><table class="table"><thead><tr><th>Guru</th><th>Status</th><th>Masuk</th><th>Pulang</th><th>Keterangan</th></tr></thead><tbody>${teachers.map(t=>{const a=attFor(d,t.id);return `<tr><td>${esc(t.full_name)}</td><td><select onchange="editAdmin('${t.id}','status',this.value)"><option value="">—</option><option ${a.status==='Hadir'?'selected':''}>Hadir</option><option ${a.status==='Izin'?'selected':''}>Izin</option><option ${a.status==='Sakit'?'selected':''}>Sakit</option><option ${a.status==='Absen'?'selected':''}>Absen</option></select></td><td><input type="time" value="${fmtTime(a.check_in)}" onchange="editAdmin('${t.id}','check_in',this.value)"></td><td><input type="time" value="${fmtTime(a.check_out)}" onchange="editAdmin('${t.id}','check_out',this.value)"></td><td><input value="${esc(a.notes||'')}" onchange="editAdmin('${t.id}','notes',this.value)"></td></tr>`}).join('')}</tbody></table></div>`}
+async function editAdmin(tid,col,val){const d=document.getElementById('kdate').value,old=attendance.find(a=>a.attendance_date===d&&a.teacher_id===tid)||{};const payload={teacher_id:tid,attendance_date:d,status:old.status||null,check_in:old.check_in||null,check_out:old.check_out||null,notes:old.notes||null,updated_by:profile.id};payload[col]=val||null;const q=await sb.from('attendance').upsert(payload,{onConflict:'teacher_id,attendance_date'}).select().single();if(q.error)toast(q.error.message);else{const ix=attendance.findIndex(a=>a.id===q.data.id);if(ix>=0)attendance[ix]=q.data;else attendance.push(q.data);toast('✓ Koreksi tersimpan online');renderKoreksi();}}
+function openTeacher(){document.getElementById('teacherModal').classList.add('open')}
+function closeTeacher(){document.getElementById('teacherModal').classList.remove('open')}
+async function addTeacher(){const name=document.getElementById('newName').value.trim(),em=document.getElementById('newEmail').value.trim();if(!name){alert('Nama wajib diisi');return}const q=await sb.from('teachers').insert({full_name:name,email:em||null,active:true}).select().single();if(q.error){toast(q.error.message);return}teachers.push(q.data);closeTeacher();render();toast('✓ Data guru tersimpan online. Akun login dibuat terpisah oleh Admin/server.');}
+sb.auth.onAuthStateChange((event)=>{if(event==='SIGNED_OUT'){document.getElementById('login').style.display='grid';document.getElementById('app').style.display='none'}});
+(async()=>{try{const s=await sb.auth.getSession();if(s.data.session)await start()}catch(e){console.error(e)}})();
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+}
+</script>
+</body>
+</html>
