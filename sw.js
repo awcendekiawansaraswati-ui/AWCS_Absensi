@@ -1,4 +1,4 @@
-const CACHE = 'awcs-pwa-v7-pdf-kop';
+const CACHE = 'awcs-pwa-v8-wita-rls';
 const APP_SHELL = ['./','./index.html','./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png','./assets/signature_transparent.png','./assets/stamp_transparent.png'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(APP_SHELL)).then(() => self.skipWaiting()));
