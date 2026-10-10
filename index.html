@@ -169,6 +169,19 @@ input,select,textarea{border-radius:13px;border-color:#dce4ef;background:#fbfcfe
   body:before{display:none}.signature-area{background:#fff!important}.sigbox{box-shadow:none!important;border:0!important}
 }
 
+
+/* Rekap bulanan: tampilkan status, jam masuk, dan jam pulang per tanggal */
+.daybox.daydetail{min-width:0;width:100%;height:auto;min-height:48px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:3px 0;border-radius:5px;font-size:8px;line-height:1.15;white-space:nowrap}
+.daybox.daydetail.has-data{color:#344054;background:#fbfcfe}
+.daystatus{font-size:12px;line-height:1.05;font-weight:900;color:#10805a}
+.daytimes{display:flex;flex-direction:column;align-items:center;gap:1px;font-size:7px;line-height:1.1;color:#344054;white-space:nowrap}
+@media print{
+ .recap th.day{font-size:5.5px!important;white-space:normal!important}
+ .daybox.daydetail{min-width:0!important;width:100%!important;min-height:31px!important;height:auto!important;padding:1px 0!important;gap:1px!important;border:0!important;font-size:6px!important;background:transparent!important}
+ .daystatus{font-size:8px!important;line-height:1!important}
+ .daytimes{font-size:5.5px!important;line-height:1.05!important;gap:1px!important}
+}
+
 </style>
 </head>
 <body>
@@ -350,18 +363,22 @@ async function rekap(){
  let head='<tr><th rowspan="2">No</th><th rowspan="2">Nama Guru</th>';
  for(let d=1;d<=lastDay;d++) head+=`<th class="day">${d}</th>`;
  head+='</tr><tr>';
- for(let d=1;d<=lastDay;d++) head+='<th class="day">H/I/S/A</th>';
+ for(let d=1;d<=lastDay;d++) head+='<th class="day">Status · M/P</th>';
  head+='</tr>';
  const body=list.map((t,i)=>{
    let cells='';
    for(let d=1;d<=lastDay;d++){
      const dt=`${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-     const c=code(byKey.get(`${t.id}|${dt}`));
-     cells+=`<td class="day"><div class="daybox honly ${c?'has-data':''}">${c}</div></td>`;
+     const a=byKey.get(`${t.id}|${dt}`);
+     const c=code(a);
+     const masuk=fmtTime(a?.check_in);
+     const pulang=fmtTime(a?.check_out);
+     const hasData=!!(c||masuk||pulang);
+     cells+=`<td class="day"><div class="daybox daydetail ${hasData?'has-data':''}" title="${[c,masuk?`Masuk ${masuk}`:'',pulang?`Pulang ${pulang}`:''].filter(Boolean).join(' · ')}">${c?`<b class="daystatus">${c}</b>`:''}${masuk||pulang?`<div class="daytimes">${masuk?`<span>M ${esc(masuk)}</span>`:''}${pulang?`<span>P ${esc(pulang)}</span>`:''}</div>`:''}</div></td>`;
    }
    return `<tr><td>${i+1}</td><td><b>${esc(t.full_name)}</b></td>${cells}</tr>`;
  }).join('');
- document.getElementById('main').innerHTML=`<div class="head"><div><h2>Rekap Bulanan</h2><p class="muted">Rekap otomatis dari absensi guru. H = Hadir, I = Izin, S = Sakit, A = Absen.</p></div><div class="actions"><button class="btn light" onclick="addSignature()">✍ Tambah Tanda Tangan</button><button class="btn light" onclick="addStamp()">🔵 Tambah Stempel Sekolah</button><button class="btn primary" onclick="window.print()">🖨 Cetak</button></div></div><div class="card"><label>Bulan</label><input id="rekapMonth" type="month" value="${value}" onchange="rekap()"><div class="print-head"><h2>ADI WIDYALAYA CENDEKIAWAN SARASWATI</h2><h3>REKAP ABSENSI GURU — ${String(m).padStart(2,'0')}/${y}</h3></div><div class="tablewrap" style="margin-top:18px"><table class="table recap"><thead>${head}</thead><tbody>${body||'<tr><td colspan="40" style="text-align:center">Belum ada data guru.</td></tr>'}</tbody></table></div>
+ document.getElementById('main').innerHTML=`<div class="head"><div><h2>Rekap Bulanan</h2><p class="muted">Rekap bulanan menampilkan status dan waktu. H = Hadir, I = Izin, S = Sakit, A = Absen; M = Masuk, P = Pulang.</p></div><div class="actions"><button class="btn light" onclick="addSignature()">✍ Tambah Tanda Tangan</button><button class="btn light" onclick="addStamp()">🔵 Tambah Stempel Sekolah</button><button class="btn primary" onclick="window.print()">🖨 Cetak</button></div></div><div class="card"><label>Bulan</label><input id="rekapMonth" type="month" value="${value}" onchange="rekap()"><div class="print-head"><h2>ADI WIDYALAYA CENDEKIAWAN SARASWATI</h2><h3>REKAP ABSENSI GURU — ${String(m).padStart(2,'0')}/${y}</h3></div><div class="tablewrap" style="margin-top:18px"><table class="table recap"><thead>${head}</thead><tbody>${body||'<tr><td colspan="40" style="text-align:center">Belum ada data guru.</td></tr>'}</tbody></table></div>
  <div class="signature-area"><div class="sigbox"><div>Mengetahui,</div><div>Kepala Sekolah</div><div class="sig-images">${printStamp?`<img class="stamp" src="${printStamp}">`:''}${printSignature?`<img class="signature" src="${printSignature}">`:''}</div><b>${esc(principalName)}</b></div></div>
 </div>`;
 }
