@@ -1,9 +1,9 @@
-const CACHE = 'awcs-pwa-v8-wita-rls';
+const CACHE = 'awcs-pwa-v9-rekap-jam';
 const APP_SHELL = ['./','./index.html','./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png','./assets/signature_transparent.png','./assets/stamp_transparent.png'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(APP_SHELL)).then(() => self.skipWaiting()));
 });
-self.addEventListener('activate', event => event.waitUntil(self.clients.claim()));
+self.addEventListener('activate', event => event.waitUntil((async()=>{const keys=await caches.keys();await Promise.all(keys.filter(key=>key.startsWith('awcs-pwa-')&&key!==CACHE).map(key=>caches.delete(key)));await self.clients.claim();})()));
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
   const url = new URL(event.request.url);
