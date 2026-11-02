@@ -1,5 +1,5 @@
-const CACHE = 'awcs-pwa-v10-rekap-jam';
-const APP_SHELL = ['./','./index.html','./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png','./assets/signature_transparent.png','./assets/stamp_transparent.png'];
+const CACHE = 'awcs-pwa-v11-kop-logo';
+const APP_SHELL = ['./','./index.html','./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png','./assets/signature_transparent.png','./assets/stamp_transparent.png','./assets/logo_yayasan.jpg','./assets/logo_sekolah.jpg'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(APP_SHELL)).then(() => self.skipWaiting()));
 });

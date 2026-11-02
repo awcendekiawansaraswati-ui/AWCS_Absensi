@@ -182,6 +182,16 @@ input,select,textarea{border-radius:13px;border-color:#dce4ef;background:#fbfcfe
  .daytimes{font-size:5.5px!important;line-height:1.05!important;gap:1px!important}
 }
 
+
+/* Kop cetak dengan logo yayasan dan sekolah */
+@media print{
+ .print-brand-row{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:14px!important;width:100%!important;margin:0 auto 6px!important}
+ .print-logo{display:block!important;width:82px!important;height:82px!important;flex:0 0 82px!important;object-fit:contain!important}
+ .print-brand-text{flex:1 1 auto!important;text-align:center!important;min-width:0!important}
+ .print-head h2{font-size:18px!important;line-height:1.25!important;margin:0 0 5px!important}
+ .print-head h3{font-size:14px!important;line-height:1.2!important;margin:0!important}
+}
+
 </style>
 </head>
 <body>
@@ -378,7 +388,7 @@ async function rekap(){
    }
    return `<tr><td>${i+1}</td><td><b>${esc(t.full_name)}</b></td>${cells}</tr>`;
  }).join('');
- document.getElementById('main').innerHTML=`<div class="head"><div><h2>Rekap Bulanan</h2><p class="muted">Rekap bulanan menampilkan status dan waktu. H = Hadir, I = Izin, S = Sakit, A = Absen; M = Masuk, P = Pulang.</p></div><div class="actions"><button class="btn light" onclick="addSignature()">✍ Tambah Tanda Tangan</button><button class="btn light" onclick="addStamp()">🔵 Tambah Stempel Sekolah</button><button class="btn primary" onclick="window.print()">🖨 Cetak</button></div></div><div class="card"><label>Bulan</label><input id="rekapMonth" type="month" value="${value}" onchange="rekap()"><div class="print-head"><h2>ADI WIDYALAYA CENDEKIAWAN SARASWATI</h2><h3>REKAP ABSENSI GURU — ${String(m).padStart(2,'0')}/${y}</h3></div><div class="tablewrap" style="margin-top:18px"><table class="table recap"><thead>${head}</thead><tbody>${body||'<tr><td colspan="40" style="text-align:center">Belum ada data guru.</td></tr>'}</tbody></table></div>
+ document.getElementById('main').innerHTML=`<div class="head"><div><h2>Rekap Bulanan</h2><p class="muted">Rekap bulanan menampilkan status dan waktu. H = Hadir, I = Izin, S = Sakit, A = Absen; M = Masuk, P = Pulang.</p></div><div class="actions"><button class="btn light" onclick="addSignature()">✍ Tambah Tanda Tangan</button><button class="btn light" onclick="addStamp()">🔵 Tambah Stempel Sekolah</button><button class="btn primary" onclick="window.print()">🖨 Cetak</button></div></div><div class="card"><label>Bulan</label><input id="rekapMonth" type="month" value="${value}" onchange="rekap()"><div class="print-head"><div class="print-brand-row"><img class="print-logo print-logo-foundation" src="./assets/logo_yayasan.jpg" alt="Logo Yayasan"><div class="print-brand-text"><h2>ADI WIDYALAYA CENDEKIAWAN SARASWATI</h2><h3>REKAP ABSENSI GURU — ${String(m).padStart(2,'0')}/${y}</h3></div><img class="print-logo print-logo-school" src="./assets/logo_sekolah.jpg" alt="Logo Sekolah"></div></div><div class="tablewrap" style="margin-top:18px"><table class="table recap"><thead>${head}</thead><tbody>${body||'<tr><td colspan="40" style="text-align:center">Belum ada data guru.</td></tr>'}</tbody></table></div>
  <div class="signature-area"><div class="sigbox"><div>Mengetahui,</div><div>Kepala Sekolah</div><div class="sig-images">${printStamp?`<img class="stamp" src="${printStamp}">`:''}${printSignature?`<img class="signature" src="${printSignature}">`:''}</div><b>${esc(principalName)}</b></div></div>
 </div>`;
 }
@@ -443,7 +453,7 @@ sb.auth.onAuthStateChange((event)=>{if(event==='SIGNED_OUT'){document.getElement
 </script>
 <script>
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js?v=10',{updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{}));
+  window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js?v=11',{updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{}));
 }
 </script>
 </body>
